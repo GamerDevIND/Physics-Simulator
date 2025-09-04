@@ -4,6 +4,8 @@ class Object:
     def __init__(self, type_, x:int, y:int, area:int|float, color:tuple[int, int, int] | str, hitbox:pygame.Rect,  mass=None, density=None, ) -> None:
         self.type = type_
         self.position:pygame.Vector2 = pygame.Vector2(x, y)
+        self.velocity:pygame.Vector2 = pygame.Vector2() # in rest
+        self.acceleration:pygame.Vector2 = pygame.Vector2() # no initial acceleration
         self.area = area
 
         if mass is not None:
