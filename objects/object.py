@@ -15,7 +15,7 @@ class Object:
             self.density = density
             self.mass = self.density * self.area
         else:
-            self.mass = 1
+            self.mass = 1 # example
             self.density = self.mass / self.area
 
         self.color = color
