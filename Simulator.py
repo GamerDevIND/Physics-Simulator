@@ -1,5 +1,6 @@
 import pygame
 from objects import ball, box
+from configs import G, mu
 
 pygame.init()
 
@@ -11,10 +12,14 @@ font = pygame.font.SysFont('arial', 24)
 
 acceleration_scaler = 1
 acceleration_scaler_var = acceleration_scaler
-damping  = 0.9
 
-box_1 = box.Box(0,0,50,50,"white", 20)
-ball_1 = ball.Ball(0,0,"white", 20)
+box_1 = box.Box(0,0,50,50,"white", 50)
+ball_1 = ball.Ball(0,0,"white", 20, radius=5)
+
+objects:list[box.Box | ball.Ball] = [ball_1,]
+
+mouse_mass = 40
+
 
 main_loop = True
 while main_loop:
@@ -22,47 +27,36 @@ while main_loop:
         if event.type == pygame.QUIT:
             main_loop = False
 
-    dt = clock.tick(60) / 1000
-
-    dt *= 10
+    dt = clock.tick(30) / 1000
 
     mouse = pygame.Vector2(pygame.mouse.get_pos())
 
     screen.fill((25,25,25))
 
-    direction_1 = box_1.position - mouse
+    for obj in objects:
+        direction = mouse - obj.position
+        dist_sq = direction.length_squared()
+        if dist_sq > 25:
+            magnitude = (G * mouse_mass * obj.mass) / dist_sq
+            gravity = direction.normalize() * magnitude
+            print(gravity)
+            obj.apply_force(gravity)
 
-    # screen.blit(font.render(f"Distance: {direction_1.length():.2f}\nSpeed: {box_1.velocity.length():.2f}\nMouse: {mouse.x} / {mouse.y}\nFPS: {int(clock.get_fps())}", True, "white"), (50, 50))
+        if obj.velocity.length() > 0.1:
+            friction_dir = -obj.velocity.normalize()
+            friction_mag = min(mu * obj.mass, obj.velocity.length() * obj.mass)
 
-    # if direction_1.length() > 5:
-    #     box_1.acceleration = direction_1.normalize()  * acceleration_scaler_var
-    #     acceleration_scaler_var += 0.01
-    # else: 
-    #     box_1.acceleration = pygame.Vector2(0,0)
-    #     acceleration_scaler_var = acceleration_scaler
+            fric = friction_dir * friction_mag
 
+            obj.apply_force(fric)
 
-    # box_1.move(damping)
+        obj.update(dt)
 
-    # if point0.x > screen.get_width() or point0.x < 0:
-    #     velocity.x *= -1
-    # if point0.y > screen.get_height() or point0.y < 0:
-    #     velocity.y *= -1
+        if pygame.mouse.get_pressed()[0]:
+            obj.position = mouse
+            obj.acceleration = obj.velocity = pygame.Vector2()
 
-    # if not (0 < box_1.hitbox.centerx < screen.get_width()):
-    #     box_1.velocity.x *= -1
-    
-    # if not (0 < box_1.hitbox.centery < screen.get_height()):
-    #     box_1.velocity.y *= -1
-
-    # if pygame.mouse.get_pressed()[0]:
-    #     box_1.position = mouse.copy()
-    #     box_1.velocity = pygame.Vector2(0, 0)
-    #     box_1.acceleration = pygame.Vector2(0, 0)
-
-    box_1.draw(screen)
-
-    # pygame.draw.line(screen, "green", point0, mouse, 3)
+        obj.draw(screen)
 
     pygame.display.flip()
 

@@ -22,3 +22,12 @@ class Object:
 
         self.hitbox = hitbox
         self.hitbox.center = (self.position.x, self.position.y)
+
+    def apply_force(self, force:pygame.Vector2):
+        self.acceleration += force / self.mass
+
+    def update(self, dt):
+        self.velocity += self.acceleration * dt
+        self.position += self.velocity
+        self.acceleration = pygame.Vector2(0, 0)
+        self.hitbox.center = self.position
